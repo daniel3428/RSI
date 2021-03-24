@@ -3,6 +3,7 @@ package com.example.rsi;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 
 import org.apache.http.HttpEntity;
@@ -33,8 +34,22 @@ public class Http_Get extends Service {
         String line;
 
         while ((line = reader.readLine()) != null) {
-            Log.i("wangshu", line);
+            if(line.compareTo("<!--價量明細 開始-->") == 0) {
+                break;
+            }
         }
+        //Log.i("wangshu", line);
+        sentToMainActivity(R.integer.sentToMain, line);
+    }
+
+    private void sentToMainActivity (int number, String message) {
+
+        Message msg = Message.obtain();
+        //設定Message的內容
+        msg.what = number;
+        msg.obj = message;
+        //使用MainActivity的static handler來丟Message
+        MainActivity.handler.sendMessage(msg);
     }
 
     public void Get(String url){
@@ -64,7 +79,7 @@ public class Http_Get extends Service {
                 get.addHeader("Accept-Encoding", "deflate");
                 get.addHeader("Accept", "text/html");
                 get.addHeader("Accept-Language", "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7");
-                get.addHeader("Referer", "http://pchome.megatime.com.tw/stock/sto0/ock3/sid6552.html");
+                get.addHeader("Referer", "http://pchome.megatime.com.tw/stock/sto0/ock3/sid3010.html");
 
                 try {
                     HttpResponse mHttpResponse = httpClient.execute(get);
