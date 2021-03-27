@@ -3,13 +3,18 @@ package com.example.rsi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Vibrator;
 import android.text.Html;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 
@@ -30,13 +35,16 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
+    private String[] ChId = {"ch3","ch4"};
+    private int ch_index = 0;
+
     private void setNotification(String message) {
         Intent intent= new Intent();
         intent.setClass(this, MainActivity.class);
         //intent.setAction(MyService.ACTION1);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP
         | Intent.FLAG_ACTIVITY_NEW_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+        //PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationManager manager = (NotificationManager)
                 getSystemService(Context.NOTIFICATION_SERVICE);
@@ -45,17 +53,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         builder.setSmallIcon(R.drawable.pika)
                 .setWhen(System.currentTimeMillis())
                 .setContentText("Go")
-                .setContentIntent(pendingIntent)
+                //.setContentIntent(pendingIntent)
                 .setChannelId("2")
                 .setContentInfo("3");
 
         builder.setContentTitle("Hi");
-        builder.addAction(111,"ACTION1",pendingIntent);
-        builder.setVibrate(new long[] { 1000, 3000, 1000});
+        //builder.addAction(111,"ACTION1",pendingIntent);
+        //builder.setVibrate(new long[] { 1000, 3000, 1000});
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel;
+            channel = new NotificationChannel(ChId[ch_index], "Todo list", NotificationManager.IMPORTANCE_HIGH);
+            channel.enableVibration(true);
+            channel.setVibrationPattern(new long[]{500});
+
+            if (!TextUtils.isEmpty(ChId[ch_index])) {
+                //先删除之前的channelId对应的消息通道.
+                manager.deleteNotificationChannel(ChId[ch_index]);
+                Log.i("wangshu", String.valueOf(ch_index));
+            }
+            if (!TextUtils.isEmpty(ChId[ch_index])) {
+                Log.i("wangshu", String.valueOf(ch_index));
+            }
+            ch_index = (ch_index + 1) % 2;
+            channel = new NotificationChannel(ChId[ch_index], "Todo list", NotificationManager.IMPORTANCE_HIGH);
+            channel.enableVibration(true);
+            channel.setVibrationPattern(new long[]{500});
+
+            manager.createNotificationChannel(channel);
+            builder.setChannelId(ChId[ch_index]);
+        }
         Notification notification = builder.build();
+        //notification.defaults |= Notification.DEFAULT_VIBRATE;
 
         manager.notify((int)(Math.random()*55446), notification);
-        //Log.i("wangshu", message);
+        //Log.i("wangshu", String.valueOf(Build.VERSION.SDK_INT));
     }
 
     static Handler handler; //宣告成static讓service可以直接使用
@@ -100,6 +133,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         };
+    }
+
+    public void setVibrate(int time){
+        Vibrator myVibrator = (Vibrator) getSystemService(Service.VIBRATOR_SERVICE);
+        myVibrator.vibrate(time);
     }
 
     private Button.OnClickListener btn1Listener = new Button.OnClickListener() {
