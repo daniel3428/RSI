@@ -35,8 +35,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private String[] ChId = {"ch3","ch4"};
-    private int ch_index = 0;
+    private String ChId = "ch1";
 
     private void setNotification(String message) {
         Intent intent= new Intent();
@@ -64,25 +63,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel;
-            channel = new NotificationChannel(ChId[ch_index], "Todo list", NotificationManager.IMPORTANCE_HIGH);
+            channel = new NotificationChannel(ChId, "Todo list", NotificationManager.IMPORTANCE_HIGH);
             channel.enableVibration(true);
-            channel.setVibrationPattern(new long[]{500});
-
-            if (!TextUtils.isEmpty(ChId[ch_index])) {
-                //先删除之前的channelId对应的消息通道.
-                manager.deleteNotificationChannel(ChId[ch_index]);
-                Log.i("wangshu", String.valueOf(ch_index));
-            }
-            if (!TextUtils.isEmpty(ChId[ch_index])) {
-                Log.i("wangshu", String.valueOf(ch_index));
-            }
-            ch_index = (ch_index + 1) % 2;
-            channel = new NotificationChannel(ChId[ch_index], "Todo list", NotificationManager.IMPORTANCE_HIGH);
-            channel.enableVibration(true);
-            channel.setVibrationPattern(new long[]{500});
+            channel.setVibrationPattern(new long[]{500, 2000, 500});
 
             manager.createNotificationChannel(channel);
-            builder.setChannelId(ChId[ch_index]);
+            builder.setChannelId(ChId);
         }
         Notification notification = builder.build();
         //notification.defaults |= Notification.DEFAULT_VIBRATE;
