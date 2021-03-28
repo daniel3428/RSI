@@ -2,9 +2,12 @@ package com.example.rsi;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
+
+import androidx.annotation.RequiresApi;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -24,17 +27,176 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.LocalTime;
+import java.util.ArrayList;
 
 public class Http_Get extends Service {
 
     private String getUrl;
 
+    private ArrayList<Integer> upDownArr;
+    private ArrayList<Double> buyPriceArr;
+    private ArrayList<Double> sellPriceArr;
+    private ArrayList<Double> dealPriceArr;
+    private ArrayList<Integer> dealQuantityArr;
+    private ArrayList<LocalTime> preTimestampTemp;
+
+    private void processOneLine(String inputString) {
+        int i_temp=0, priceDigit=1,quantityDigit=1;
+
+        if (inputString.indexOf('.',i_temp) > -1) {
+            //Log.i("123",inputString.substring(inputString.indexOf('.',0)-2,
+            //inputString.indexOf('.',0)+3));
+            for (int i=1;i<=4;i++) {
+                if(inputString.charAt(inputString.indexOf('.',i_temp)-i) <= '9' &&
+                        inputString.charAt(inputString.indexOf('.',i_temp)-i) >= '0') {
+                    priceDigit = i;
+                }
+                else {
+                    break;
+                }
+            }
+            if(inputString.indexOf("<!--價量明細 結束-->") < 0) {
+
+                this.buyPriceArr.add(Double.valueOf(inputString.substring(inputString.indexOf('.',i_temp)-priceDigit,
+                        inputString.indexOf('.',i_temp)+3)));
+                i_temp = inputString.indexOf('.',i_temp) + 1;
+                this.sellPriceArr.add(Double.valueOf(inputString.substring(inputString.indexOf('.',i_temp)-priceDigit,
+                        inputString.indexOf('.',i_temp)+3)));
+                i_temp = inputString.indexOf('.',i_temp) + 1;
+                this.dealPriceArr.add(Double.valueOf(inputString.substring(inputString.indexOf('.',i_temp)-priceDigit,
+                        inputString.indexOf('.',i_temp)+3)));
+            }
+            else {
+                this.dealPriceArr.add(Double.valueOf(inputString.substring(inputString.indexOf('.',i_temp)-priceDigit,
+                        inputString.indexOf('.',i_temp)+3)));
+                i_temp = inputString.indexOf("</td><td>",i_temp) + 1;
+                //i_temp = inputString.indexOf('.',i_temp) + 1;
+            }
+            //Log.i("123",inputString.substring(inputString.indexOf("</td><td>",i_temp)));
+            for (int i=0;i<3;i++) {
+                i_temp = inputString.indexOf("</td><td>",i_temp) + 1;
+            }
+            //Log.i("123",String.valueOf(this.dealPriceArr.size()));
+            //Log.i("123",inputString.substring(inputString.indexOf("</td><td>",i_temp)-8,
+            //inputString.indexOf("</td><td>",i_temp)-5));
+            if (inputString.charAt(inputString.indexOf("</td><td>",i_temp)-1) <= '9' &&
+                    inputString.charAt(inputString.indexOf("</td><td>",i_temp)-1) >= '0') {
+                for (int i=1;i<=4;i++) {
+                    if(inputString.charAt(inputString.indexOf("</td><td>",i_temp)-i) <= '9' &&
+                            inputString.charAt(inputString.indexOf("</td><td>",i_temp)-i) >= '0') {
+                        quantityDigit = i;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                this.dealQuantityArr.add(Integer.valueOf(inputString.substring(inputString.indexOf("</td><td>",i_temp)-quantityDigit,
+                        inputString.indexOf("</td><td>",i_temp))));
+
+            }
+            else {
+                for (int i=1;i<=4;i++) {
+                    //Log.i("123",inputString.substring(inputString.indexOf("</td><td>",i_temp)-7-i));
+                    if(inputString.charAt(inputString.indexOf("</td><td>",i_temp)-7-i) <= '9' &&
+                            inputString.charAt(inputString.indexOf("</td><td>",i_temp)-7-i) >= '0') {
+                        quantityDigit = i;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                this.dealQuantityArr.add(Integer.valueOf(inputString.substring(inputString.indexOf("</td><td>",i_temp)-7-quantityDigit,
+                        inputString.indexOf("</td><td>",i_temp)-7)));
+                if(inputString.charAt(inputString.indexOf("</td><td>",i_temp)-7-quantityDigit-7)== 'e') {
+                    //Log.i("123",String.valueOf(inputString.charAt(inputString.indexOf("</td><td>",i_temp)-7-quantityDigit-7)));
+                    upDownArr.add(1);
+                }
+                else if(inputString.charAt(inputString.indexOf("</td><td>",i_temp)-7-quantityDigit-7)== '3'){
+                    //Log.i("123",String.valueOf(inputString.charAt(inputString.indexOf("</td><td>",i_temp)-7-quantityDigit-7)));
+                    upDownArr.add(-1);
+                }
+                else {
+                    upDownArr.add(0);
+                }
+                //Log.i("123",inputString.substring(inputString.indexOf("</td><td>",i_temp)-7-quantityDigit,
+                //inputString.indexOf("</td><td>",i_temp)-7));
+            }
+            //Log.i("123",String.valueOf(dealQuantityArr.get(dealQuantityArr.size()-1)));
+            //Log.i("123",String.valueOf(dealPriceArr.get(dealPriceArr.size()-1)));
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void converStreamToString(InputStream is) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         String line;
+        boolean rightLine;
+        char c_temp;
+        int i_temp;
+
+        this.buyPriceArr = new ArrayList<>();
+        this.sellPriceArr = new ArrayList<>();
+        this.dealPriceArr = new ArrayList<>();
+        this.dealQuantityArr = new ArrayList<>();
+        this.upDownArr = new ArrayList<>();
+        this.preTimestampTemp = new ArrayList<>();
 
         while ((line = reader.readLine()) != null) {
             if(line.compareTo("<!--價量明細 開始-->") == 0) {
+                break;
+            }
+        }
+
+        while(true) {
+            line = String.valueOf("");
+            rightLine = false;
+            c_temp = (char)reader.read();
+            while (c_temp != ':') {
+                line = line.concat(String.valueOf(c_temp));
+                c_temp = (char)reader.read();
+                //Log.i("wangshu", String.valueOf(c_temp));
+                //break;
+            }
+
+            for (int i=0;i<6;i++) {
+                c_temp = (char)reader.read();
+                //line = line.concat(String.valueOf(c_temp));
+
+
+                //Log.i("123", String.valueOf(c_temp));
+
+                if (i==2 && c_temp == ':' ) {
+                    rightLine = true;
+                    this.preTimestampTemp.add(LocalTime.now());
+                    //Log.i("wangshu", String.valueOf(this.timestampTemp.getHour()));
+                } else if(i==2 && line.indexOf("<!--價量明細 結束-->") > 0) {
+                    rightLine = true;
+                }
+                else {
+                    line = line.concat(String.valueOf(c_temp));
+                }
+
+            }
+
+            if (rightLine) {
+                //Log.i("wangshu", line.substring(line.length()-9,line.length()-1));
+                if (line.indexOf("<!--價量明細 結束-->") < 0) {
+                    i_temp = Integer.parseInt(line.substring(line.length()-7,line.length()-5));
+                    this.preTimestampTemp.set(this.preTimestampTemp.size()-1,
+                            this.preTimestampTemp.get(this.preTimestampTemp.size()-1).withHour(i_temp));
+                    i_temp = Integer.parseInt(line.substring(line.length()-5,line.length()-3));
+                    this.preTimestampTemp.set(this.preTimestampTemp.size()-1,
+                            this.preTimestampTemp.get(this.preTimestampTemp.size()-1).withMinute(i_temp));
+                    i_temp = Integer.parseInt(line.substring(line.length()-3,line.length()-1));
+                    this.preTimestampTemp.set(this.preTimestampTemp.size()-1,
+                            this.preTimestampTemp.get(this.preTimestampTemp.size()-1).withSecond(i_temp));
+                }
+                processOneLine(line);
+                //Log.i("wangshu", line);
+            }
+
+            if (line.indexOf("<!--價量明細 結束-->") > 0) {
                 break;
             }
         }
