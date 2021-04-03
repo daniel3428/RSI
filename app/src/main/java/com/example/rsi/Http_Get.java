@@ -40,6 +40,7 @@ public class Http_Get extends Service {
     private ArrayList<Double> dealPriceArr;
     private ArrayList<Integer> dealQuantityArr;
     private ArrayList<LocalTime> preTimestampTemp;
+    private ArrayList<RSI> rsiArr;
 
     private void processOneLine(String inputString) {
         int i_temp=0, priceDigit=1,quantityDigit=1;
@@ -214,6 +215,37 @@ public class Http_Get extends Service {
         MainActivity.handler.sendMessage(msg);
     }
 
+    private void calculateRSI() {
+        RSI tempRSI;
+        int i;
+
+        this.rsiArr = new ArrayList<>();
+        tempRSI = new RSI();
+        tempRSI.downMean = 0.2;
+        tempRSI.upMean = 0.3;
+        tempRSI.timeStamp = LocalTime.now();
+        tempRSI.timeStamp = tempRSI.timeStamp.withHour(2);
+        this.rsiArr.add(tempRSI);
+
+        tempRSI = new RSI();
+        tempRSI.downMean = 0.5;
+        tempRSI.upMean = 0.7;
+        tempRSI.timeStamp = LocalTime.now();
+        tempRSI.timeStamp = tempRSI.timeStamp.withHour(3);
+        this.rsiArr.add(tempRSI);
+
+        tempRSI = new RSI();
+        tempRSI.downMean = 0.5;
+        tempRSI.upMean = 0.7;
+        tempRSI.timeStamp = LocalTime.now();
+        tempRSI.timeStamp = tempRSI.timeStamp.withHour(3);
+        this.rsiArr.add(tempRSI);;
+        /*Log.i("wangshu", String.valueOf(this.rsiArr.size()));
+        for(i = 0; i < this.rsiArr.size(); i++) {
+            Log.i("wangshu", String.valueOf(this.rsiArr.get(i).timeStamp));
+        }*/
+    }
+
     public void Get(String url){
         this.getUrl = url;
 
@@ -251,6 +283,7 @@ public class Http_Get extends Service {
                         InputStream mInputStream = mHttpEntity.getContent();
                         converStreamToString(mInputStream);
                         //Log.i("wangshu", "請求狀態碼:" + code + "\n請求結果:\n" + respose);
+                        calculateRSI();
                         mInputStream.close();
                     }
                 } catch (ClientProtocolException e) {
