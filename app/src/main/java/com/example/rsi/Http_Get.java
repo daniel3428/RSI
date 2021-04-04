@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Message;
+import android.renderscript.Sampler;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
@@ -193,6 +194,7 @@ public class Http_Get extends Service {
                     this.preTimestampTemp.set(this.preTimestampTemp.size()-1,
                             this.preTimestampTemp.get(this.preTimestampTemp.size()-1).withSecond(i_temp));
                 }
+                //Log.i("wangshu", String.valueOf(this.preTimestampTemp.get(this.preTimestampTemp.size()-1)));
                 processOneLine(line);
                 //Log.i("wangshu", line);
             }
@@ -201,6 +203,7 @@ public class Http_Get extends Service {
                 break;
             }
         }
+
         //Log.i("wangshu", line);
         sentToMainActivity(R.integer.sentToMain, line);
     }
@@ -216,6 +219,10 @@ public class Http_Get extends Service {
     }
 
     private void calculateRSI() {
+
+        /*for (int i = this.preTimestampTemp.size()-1;i >= 0;i--) {
+            Log.i("wangshu", String.valueOf(this.preTimestampTemp.get(i)));
+        }*/
         RSI tempRSI;
         Double diff, diff_up, diff_down;
         this.rsiArr = new ArrayList<>();
@@ -228,12 +235,17 @@ public class Http_Get extends Service {
         tempRSI.timeStamp = LocalTime.now();
         tempRSI.timeStamp = tempRSI.timeStamp.withHour(9);
         tempRSI.timeStamp = tempRSI.timeStamp.withMinute(0);
+        tempRSI.timeStamp = tempRSI.timeStamp.withSecond(0);
         tempRSI.index = 0;
         this.rsiArr.add(tempRSI);
 
         for (int i = this.preTimestampTemp.size()-1;i >= 0;i--) {
+            /*Log.i("wangshu", String.valueOf(this.preTimestampTemp.get(i)));
+            Log.i("wangshu", String.valueOf(this.dealQuantityArr.get(i)));
+            Log.i("wangshu", String.valueOf(this.dealPriceArr.get(i)));
+            Log.i("wangshu", String.valueOf(this.upDownArr.get(i)));*/
             if (i>0) {
-                if (this.preTimestampTemp.get(--i).isAfter(this.rsiArr.get(this.rsiArr.size()-1).timeStamp.plusMinutes(5))) {
+                if (this.preTimestampTemp.get(i-1).isAfter(this.rsiArr.get(this.rsiArr.size()-1).timeStamp.plusMinutes(5))) {
                     tempRSI = new RSI();
                     tempRSI.endPrice = dealPriceArr.get(i);
                     diff = tempRSI.endPrice - this.rsiArr.get(this.rsiArr.size()-1).endPrice;
@@ -249,13 +261,16 @@ public class Http_Get extends Service {
                     tempRSI.rsiValue = tempRSI.upMean/(tempRSI.upMean + tempRSI.downMean);
                     tempRSI.index = i;
                     tempRSI.timeStamp = this.rsiArr.get(this.rsiArr.size()-1).timeStamp.plusMinutes(5);
-                    Log.i("wangshu", String.valueOf(diff_up));
+                    this.rsiArr.add(tempRSI);
+                    /*Log.i("wangshu", String.valueOf(diff_up));
                     Log.i("wangshu", String.valueOf(diff_down));
                     Log.i("wangshu", String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).upMean));
                     Log.i("wangshu", String.valueOf(tempRSI.upMean));
                     Log.i("wangshu", String.valueOf(tempRSI.downMean));
                     Log.i("wangshu", String.valueOf(tempRSI.rsiValue));
-                    this.rsiArr.add(tempRSI);
+                    Log.i("wangshu", String.valueOf(this.preTimestampTemp.get(i)));
+                    Log.i("wangshu", String.valueOf(dealPriceArr.get(i)));*/
+
                 }
             }
         }
