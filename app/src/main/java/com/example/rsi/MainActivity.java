@@ -114,6 +114,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         //Log.i("wangshu", ss_msg);
                         setNotification(ss_msg);
                         break;
+                    case R.integer.receiveUpDown:
+                        String ss_up_down = (String)msg.obj;
+                        String[] ss_up_down_split = ss_up_down.split(" ");
+                        TextView textViewUpDown=findViewById(R.id.text_view_show_up_down);
+                        textViewUpDown.setText(ss_up_down_split[0] + " " +ss_up_down_split[1]);
+                        break;
                     default:
                         break;
                 }

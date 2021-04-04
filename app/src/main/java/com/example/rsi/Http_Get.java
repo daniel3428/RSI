@@ -205,7 +205,7 @@ public class Http_Get extends Service {
         }
 
         //Log.i("wangshu", line);
-        sentToMainActivity(R.integer.sentToMain, line);
+        //sentToMainActivity(R.integer.sentToMain, line);
     }
 
     private void sentToMainActivity (int number, String message) {
@@ -262,6 +262,9 @@ public class Http_Get extends Service {
                     tempRSI.index = i;
                     tempRSI.timeStamp = this.rsiArr.get(this.rsiArr.size()-1).timeStamp.plusMinutes(5);
                     this.rsiArr.add(tempRSI);
+                    if (tempRSI.rsiValue > 0.9) {
+                        sentToMainActivity(R.integer.receiveUpDown, String.valueOf(tempRSI.timeStamp) +" " +String.valueOf(tempRSI.endPrice));
+                    }
                     /*Log.i("wangshu", String.valueOf(diff_up));
                     Log.i("wangshu", String.valueOf(diff_down));
                     Log.i("wangshu", String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).upMean));
