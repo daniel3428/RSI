@@ -217,32 +217,51 @@ public class Http_Get extends Service {
 
     private void calculateRSI() {
         RSI tempRSI;
-        int i;
-
+        Double diff, diff_up, diff_down;
         this.rsiArr = new ArrayList<>();
-        tempRSI = new RSI();
-        tempRSI.downMean = 0.2;
-        tempRSI.upMean = 0.3;
-        tempRSI.timeStamp = LocalTime.now();
-        tempRSI.timeStamp = tempRSI.timeStamp.withHour(2);
-        this.rsiArr.add(tempRSI);
 
         tempRSI = new RSI();
-        tempRSI.downMean = 0.5;
-        tempRSI.upMean = 0.7;
+        tempRSI.upMean = 0.04489041219;
+        tempRSI.downMean = 0.01080204102;
+        tempRSI.endPrice = 82.0;
+        tempRSI.rsiValue = 80.61;
         tempRSI.timeStamp = LocalTime.now();
-        tempRSI.timeStamp = tempRSI.timeStamp.withHour(3);
+        tempRSI.timeStamp = tempRSI.timeStamp.withHour(9);
+        tempRSI.timeStamp = tempRSI.timeStamp.withMinute(0);
+        tempRSI.index = 0;
         this.rsiArr.add(tempRSI);
 
-        tempRSI = new RSI();
-        tempRSI.downMean = 0.5;
-        tempRSI.upMean = 0.7;
-        tempRSI.timeStamp = LocalTime.now();
-        tempRSI.timeStamp = tempRSI.timeStamp.withHour(3);
-        this.rsiArr.add(tempRSI);;
-        /*Log.i("wangshu", String.valueOf(this.rsiArr.size()));
-        for(i = 0; i < this.rsiArr.size(); i++) {
-            Log.i("wangshu", String.valueOf(this.rsiArr.get(i).timeStamp));
+        for (int i = this.preTimestampTemp.size()-1;i >= 0;i--) {
+            if (i>0) {
+                if (this.preTimestampTemp.get(--i).isAfter(this.rsiArr.get(this.rsiArr.size()-1).timeStamp.plusMinutes(5))) {
+                    tempRSI = new RSI();
+                    tempRSI.endPrice = dealPriceArr.get(i);
+                    diff = tempRSI.endPrice - this.rsiArr.get(this.rsiArr.size()-1).endPrice;
+                    if (diff > 0 ) {
+                        diff_up = diff;
+                        diff_down = 0.0;
+                    } else {
+                        diff_up = 0.0;
+                        diff_down = -diff;
+                    }
+                    tempRSI.upMean = this.rsiArr.get(this.rsiArr.size()-1).upMean*(6-1)/6 + diff_up/6;
+                    tempRSI.downMean = this.rsiArr.get(this.rsiArr.size()-1).downMean*(6-1)/6 + diff_down/6;
+                    tempRSI.rsiValue = tempRSI.upMean/(tempRSI.upMean + tempRSI.downMean);
+                    tempRSI.index = i;
+                    tempRSI.timeStamp = this.rsiArr.get(this.rsiArr.size()-1).timeStamp.plusMinutes(5);
+                    Log.i("wangshu", String.valueOf(diff_up));
+                    Log.i("wangshu", String.valueOf(diff_down));
+                    Log.i("wangshu", String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).upMean));
+                    Log.i("wangshu", String.valueOf(tempRSI.upMean));
+                    Log.i("wangshu", String.valueOf(tempRSI.downMean));
+                    Log.i("wangshu", String.valueOf(tempRSI.rsiValue));
+                    this.rsiArr.add(tempRSI);
+                }
+            }
+        }
+
+        /*for(int i = 0; i < this.rsiArr.size(); i++) {
+            Log.i("wangshu", String.valueOf(this.rsiArr.get(i).rsiValue));
         }*/
     }
 
