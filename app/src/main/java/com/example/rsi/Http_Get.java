@@ -226,6 +226,7 @@ public class Http_Get extends Service {
         RSI tempRSI;
         Double diff, diff_up, diff_down;
         this.rsiArr = new ArrayList<>();
+        int high_low;
 
         tempRSI = new RSI();
         tempRSI.upMean = 0.04489041219;
@@ -236,8 +237,10 @@ public class Http_Get extends Service {
         tempRSI.timeStamp = tempRSI.timeStamp.withHour(9);
         tempRSI.timeStamp = tempRSI.timeStamp.withMinute(0);
         tempRSI.timeStamp = tempRSI.timeStamp.withSecond(0);
+        tempRSI.timeStamp = tempRSI.timeStamp.withNano(0);
         tempRSI.index = 0;
         this.rsiArr.add(tempRSI);
+        high_low = 0;
 
         for (int i = this.preTimestampTemp.size()-1;i >= 0;i--) {
             /*Log.i("wangshu", String.valueOf(this.preTimestampTemp.get(i)));
@@ -261,10 +264,33 @@ public class Http_Get extends Service {
                     tempRSI.rsiValue = tempRSI.upMean/(tempRSI.upMean + tempRSI.downMean);
                     tempRSI.index = i;
                     tempRSI.timeStamp = this.rsiArr.get(this.rsiArr.size()-1).timeStamp.plusMinutes(5);
-                    this.rsiArr.add(tempRSI);
-                    if (tempRSI.rsiValue > 0.9) {
-                        sentToMainActivity(R.integer.receiveUpDown, String.valueOf(tempRSI.timeStamp) +" " +String.valueOf(tempRSI.endPrice));
+
+                    if (this.rsiArr.size() >= 2) {
+                        if (this.rsiArr.get(this.rsiArr.size()-1).rsiValue > 0.5 && (tempRSI.rsiValue - this.rsiArr.get(this.rsiArr.size()-1).rsiValue)<-0.00001 && (this.rsiArr.get(this.rsiArr.size()-1).rsiValue - this.rsiArr.get(this.rsiArr.size()-2).rsiValue)>0.00001) {
+                            if (high_low >= 0) {
+                                high_low = -1;
+                            } else {
+                                high_low--;
+                            }
+                            sentToMainActivity(R.integer.receiveUpDown, String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).timeStamp) +" " +String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).endPrice) + " " + String.valueOf(high_low)+ " " +String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).rsiValue));
+                            if (this.preTimestampTemp.get(this.preTimestampTemp.size()-1).isAfter(LocalTime.now().minusMinutes(3))) {
+                                sentToMainActivity(R.integer.upDownNotification, String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).timeStamp) +" " +String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).endPrice) + " " + String.valueOf(high_low)+ " " +String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).rsiValue));
+                            }
+                        } else if (this.rsiArr.get(this.rsiArr.size()-1).rsiValue <= 0.5 && (tempRSI.rsiValue - this.rsiArr.get(this.rsiArr.size()-1).rsiValue)>0.00001 && (this.rsiArr.get(this.rsiArr.size()-1).rsiValue - this.rsiArr.get(this.rsiArr.size()-2).rsiValue)<-0.00001) {
+                            if (high_low >= 0) {
+                                high_low++;
+                            } else {
+                                high_low = 1;
+                            }
+                            sentToMainActivity(R.integer.receiveUpDown, String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).timeStamp) +" " +String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).endPrice) + " " + String.valueOf(high_low)+ " " +String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).rsiValue));
+                            if (this.preTimestampTemp.get(this.preTimestampTemp.size()-1).isAfter(LocalTime.now().minusMinutes(3))) {
+                                sentToMainActivity(R.integer.upDownNotification, String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).timeStamp) +" " +String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).endPrice) + " " + String.valueOf(high_low)+ " " +String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).rsiValue));
+                            }
+                        }
+
                     }
+
+                    this.rsiArr.add(tempRSI);
                     /*Log.i("wangshu", String.valueOf(diff_up));
                     Log.i("wangshu", String.valueOf(diff_down));
                     Log.i("wangshu", String.valueOf(this.rsiArr.get(this.rsiArr.size()-1).upMean));
@@ -278,9 +304,9 @@ public class Http_Get extends Service {
             }
         }
 
-        /*for(int i = 0; i < this.rsiArr.size(); i++) {
-            Log.i("wangshu", String.valueOf(this.rsiArr.get(i).rsiValue));
-        }*/
+        for(int i = 0; i < this.rsiArr.size(); i++) {
+            Log.i("wangshu", String.valueOf(this.rsiArr.get(i).rsiValue) + " " +String.valueOf(this.rsiArr.get(i).timeStamp));
+        }
     }
 
     public void Get(String url){

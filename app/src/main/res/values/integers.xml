@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <integer name="sentToMain">345</integer>
     <integer name="receiveUpDown">248</integer>
+    <integer name="upDownNotification">847</integer>
 </resources>

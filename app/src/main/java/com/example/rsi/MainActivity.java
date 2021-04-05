@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new NotificationCompat.Builder(getApplicationContext());
         builder.setSmallIcon(R.drawable.pika)
                 .setWhen(System.currentTimeMillis())
-                .setContentText("Go")
+                .setContentText(message)
                 //.setContentIntent(pendingIntent)
                 .setChannelId("2")
                 .setContentInfo("3");
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     // 當收到的Message的代號為我們剛剛訂的代號就做下面的動作。
-                    case R.integer.sentToMain:
+                    case R.integer.upDownNotification:
                         String ss_msg = (String)msg.obj;
                         //Log.i("wangshu", ss_msg);
                         setNotification(ss_msg);
@@ -118,8 +118,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         String ss_up_down = (String)msg.obj;
                         String[] ss_up_down_split = ss_up_down.split(" ");
                         TextView textViewUpDown=findViewById(R.id.text_view_show_up_down);
-                        textViewUpDown.setText(ss_up_down_split[0] + " " +ss_up_down_split[1]);
+                        textViewUpDown.append(ss_up_down_split[0] + " " +ss_up_down_split[1]+ " "+ss_up_down_split[2]+ " "+ss_up_down_split[3]+"\n");
                         break;
+
                     default:
                         break;
                 }
@@ -146,6 +147,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
+                                TextView textViewUpDown=findViewById(R.id.text_view_show_up_down);
+                                textViewUpDown.setText("");
                                 HG.Get(getUrl);
                             }
                         }, 10000 * i);
