@@ -229,10 +229,10 @@ public class Http_Get extends Service {
         int high_low;
 
         tempRSI = new RSI();
-        tempRSI.upMean = 0.04489041219;
-        tempRSI.downMean = 0.01080204102;
-        tempRSI.endPrice = 82.0;
-        tempRSI.rsiValue = 80.61;
+        tempRSI.upMean = 0.006342354049;
+        tempRSI.downMean = 0.07458106872;
+        tempRSI.endPrice = 24.0;
+        tempRSI.rsiValue = 7.84;
         tempRSI.timeStamp = LocalTime.now();
         tempRSI.timeStamp = tempRSI.timeStamp.withHour(9);
         tempRSI.timeStamp = tempRSI.timeStamp.withMinute(0);
@@ -248,7 +248,7 @@ public class Http_Get extends Service {
             Log.i("wangshu", String.valueOf(this.dealPriceArr.get(i)));
             Log.i("wangshu", String.valueOf(this.upDownArr.get(i)));*/
             if (i>0) {
-                if (this.preTimestampTemp.get(i-1).isAfter(this.rsiArr.get(this.rsiArr.size()-1).timeStamp.plusMinutes(5))) {
+                if (this.preTimestampTemp.get(i-1).isAfter(this.rsiArr.get(this.rsiArr.size()-1).timeStamp.plusMinutes(3))) {
                     tempRSI = new RSI();
                     tempRSI.endPrice = dealPriceArr.get(i);
                     diff = tempRSI.endPrice - this.rsiArr.get(this.rsiArr.size()-1).endPrice;
@@ -263,7 +263,7 @@ public class Http_Get extends Service {
                     tempRSI.downMean = this.rsiArr.get(this.rsiArr.size()-1).downMean*(6-1)/6 + diff_down/6;
                     tempRSI.rsiValue = tempRSI.upMean/(tempRSI.upMean + tempRSI.downMean);
                     tempRSI.index = i;
-                    tempRSI.timeStamp = this.rsiArr.get(this.rsiArr.size()-1).timeStamp.plusMinutes(5);
+                    tempRSI.timeStamp = this.rsiArr.get(this.rsiArr.size()-1).timeStamp.plusMinutes(3);
 
                     if (this.rsiArr.size() >= 2) {
                         if (this.rsiArr.get(this.rsiArr.size()-1).rsiValue > 0.5 && (tempRSI.rsiValue - this.rsiArr.get(this.rsiArr.size()-1).rsiValue)<-0.00001 && (this.rsiArr.get(this.rsiArr.size()-1).rsiValue - this.rsiArr.get(this.rsiArr.size()-2).rsiValue)>0.00001) {
